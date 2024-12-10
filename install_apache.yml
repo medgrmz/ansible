@@ -4,14 +4,49 @@
   become: true
   tasks:
 
-    - name: Update repository index
-      apt:
+    - name: install updates (CentOS)
+      tags: always
+      dnf:
+        update_only: yes
         update_cache: yes
+      when: ansible_distribution == "CentOS"
 
-    - name: Install apache2 package
+    - name: Install updates (Ubuntu)
+      tags: always
       apt:
-        name: apache2
-        state: latest
+        upgrade: dist
+        upgrade_cache: yes
+      when: ansible_distribution == "Ubuntu"
+-host: web_servers
+ become: true
+ tasks:
+
+ - name: install apache and php for ubuntu servers
+   tags: apache,apache2,ubuntu
+   apt:
+     name:
+       - apache2
+       - libapache2-mod-php
+     state: latest
+   when: ansible_distribution =="Ubuntu"
+ - name: install apache and php for CentOS servers
+   tags: apache,centos,httpd
+   dnf:
+     name:
+       - httpd
+       - php
+     state: latest
+   when: ansible_distribution =="CentOS"
+
+
+- hosts: db_servers
+  become: true
+  tasks:
+  - name: install mariadb package(CentOS)
+    tags: centos,db,mariadb
+    dnf:
+      name: mariadb
+
 
     - name: Add PHP support for Apache
       apt:
